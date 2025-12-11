@@ -3,7 +3,7 @@
 ## Table of Contents
 - [Quick Model Intuition](#1-quick-model-intuition)
 - [Repository Structure](#2-repository-structure)
-- [Setup](#3-setup)
+- [Setup, Dataset and Task Description](#3-setup)
 - [Running Experiments](#4-running-experiments)
 - [Key Results](#5-key-empirical-results-minesweeper)
 - [Where Rotations Matter](#6-where-do-rotations-matter-heterophily-analysis)
@@ -115,7 +115,7 @@ You can treat this repository as a self-contained case study in:
 
 ---
 
-## 3. Setup
+## 3. Setup, Dataset and Task Description
 
 ### 3.1. Environment
 
@@ -131,7 +131,30 @@ pip install scikit-learn numpy
 
 The exact `torch_geometric` install command depends on your CUDA version; see the official PyG docs for the right wheel.
 
-### 3.2. Dataset
+### 3.2. Minesweeper Dataset
+
+The Minesweeper dataset is a synthetic graph benchmark inspired by the classic Minesweeper game, designed to test GNN performance under heterophily.
+
+**Graph Structure:**
+- Regular 100×100 grid (10,000 nodes total)
+- Each node (cell) is connected to its 8 neighboring cells (fewer for edge/corner nodes)
+- Forms a 2D lattice graph structure
+
+**Task:** Binary node classification - predict which nodes contain mines
+
+**Node Labels:**
+- 20% of nodes are randomly selected as mines (positive class)
+- 80% are safe cells (negative class)
+
+**Node Features:**
+- One-hot encoded counts of neighboring mines (0-8 neighbors)
+- For 50% of nodes, features are masked/unknown, indicated by a separate binary feature
+- This mimics the incomplete information players face in actual Minesweeper
+
+**Why Heterophilous:**
+The dataset exhibits strong heterophily because mine nodes are typically surrounded by safe nodes, and vice versa - neighboring nodes usually have different labels. This makes it an excellent benchmark for testing GNN performance under heterophily, which is the main challenge BuNNs are designed to address.
+
+**Dataset Source:** Introduced in Platonov et al. (2023) "A Critical Look at the Evaluation of GNNs under Heterophily: Are We Really Making Progress?" as part of a benchmark suite of heterophilous graph datasets.
 
 The script automatically downloads the Minesweeper dataset (from `HeterophilousGraphDataset`) the first time you run it.
 
@@ -140,6 +163,7 @@ Data is cached in a folder relative to the script file, e.g.
 ```python
 root = Path(__file__).resolve().parent / "data" / "heterophilic"
 ```
+
 ---
 
 ## 4. Running experiments
