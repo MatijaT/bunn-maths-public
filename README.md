@@ -13,13 +13,13 @@
 This repo contains a clean-room, from-scratch implementation of **Bundle Neural Networks (BuNN)** (Jacob Bamberger, Federico Barbero, Xiaowen Dong, Michael M. Bronstein ICLR 2025) applied to the Minesweeper heterophilous graph dataset along with several ablations and a study of **when the vector bundle point of view matters**. Feel free to jump to section 6 figures for a quick answer.
 
 **Why this repo?**
-While the original paper proposes a geometric architecture (using vector bundles and connection Laplacians) "on top of" a graph neural network, this project aims to demystify the maths that make this model different from a GCN and its benefits, at least in one use-case the authors suggest: on heterophilious graphs.
+While the original paper proposes a geometric architecture (using vector bundles and connection Laplacians) "on top of" a graph neural network, this project aims to demystify the maths that make this model different from a GCN and its benefits, at least in one of the use-cases the authors suggest: on heterophilious graphs.
 
 Key features:
 - **Strong Reproduction:** 96.11% ± 0.5% AUC (vs paper's 98.99%), with systematic ablations
 - **Baselines:** GraphSAGE (w/ root skip), GAT, and GCN implementations that establish a strong floor for performance.
 - **Mechanistic Analysis:** We go beyond accuracy numbers to visualize *where* the model succeeds. Our analysis shows that "parallel transport" -- the main geometric tool in BuNNs -- is critical for heterophilous nodes (where neighbors disagree) but redundant for homophilic ones. You will find some visuals making this point in Key Results below.
-- **The maths background** For the mathematical story this architecture is based on, including the smooth and discreete version, see `continuous_maths.md` and `maths_story_discrete.md` respectively. Of course you should read the original paper [here ](https://arxiv.org/abs/2405.15540).
+- **The maths background** For the mathematical story this architecture is based on, including the smooth and discrete version, see `continuous_maths.md` and `maths_story_discrete.md` respectively. Of course you should read the original paper [here ](https://arxiv.org/abs/2405.15540).
 
 ---
 
