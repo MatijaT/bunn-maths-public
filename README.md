@@ -485,16 +485,9 @@ This directly shows that:
 
 ## 8. Implementation Notes & Debugging
 
-During implementation, several non-obvious issues emerged:
+During implementation, one non-obvious issue emerged:
 
-### 8.1. Operation Ordering Bug
-**Problem:** Model predicted only majority class (≈50% AUC)
-**Root cause:** Applied linear transformation W *after* diffusion instead of before
-**Fix:** Carefully re-read Algorithm 1 - W must come before diffusion
-**Impact:** 50% → 85%+ AUC
-**Lesson:** Algorithm pseudocode details matter enormously
-
-### 8.2. Over-smoothing in φ Networks  
+### 8.1. Over-smoothing in φ Networks  
 **Problem:** Manual GraphSAGE aggregation performed poorly
 **Root cause:** Missing proper skip/residual connections causing oversmoothing
 **Fix:** Used PyG's SAGEConv with root_weight=True
