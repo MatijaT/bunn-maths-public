@@ -10,7 +10,7 @@
 - [Notes & Limitations](#7-notes-limitations-and-how-to-use-this-in-applications)
 - [Implementation notes and debugging](#8-notes-limitations-and-how-to-use-this-in-applications)
 
-This repo contains a clean-room, from-scratch implementation of **Bundle Neural Networks (BuNN)** (Jacob Bamberger, Federico Barbero, Xiaowen Dong, Michael M. Bronstein ICLR 2025) applied to the Minesweeper heterophilous graph dataset along with several ablations and a study of **when the vector bundle point of view matters**. Feel free to jump to section 6 figures for a quick answer.
+This repo contains an implementation of **Bundle Neural Networks (BuNN)** (Jacob Bamberger, Federico Barbero, Xiaowen Dong, Michael M. Bronstein ICLR 2025) applied to the Minesweeper heterophilous graph dataset along with several ablations and a study of **when the vector bundle point of view matters**. Feel free to jump to section 6 figures for a quick answer.
 
 **Why this repo?**
 While the original paper proposes a geometric architecture (using vector bundles and connection Laplacians) "on top of" a graph neural network, this project aims to demystify the maths that make this model different from a GCN and its benefits, at least in one of the use-cases the authors suggest: on heterophilious graphs.
