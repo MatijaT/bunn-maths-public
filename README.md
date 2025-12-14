@@ -21,6 +21,9 @@ Key features:
 - **Mechanistic Analysis:** We go beyond accuracy numbers to visualize *where* the model succeeds. Our analysis shows that "parallel transport" -- the main geometric tool in BuNNs -- is critical for heterophilous nodes (where neighbors disagree) but redundant for homophilic ones. You will find some visuals making this point in Where Rotations Matter section below.
 - **The maths background** For the mathematical story this architecture is based on, including the smooth and discrete version, see `continuous_maths.md` and `maths_story_discrete.md` respectively. Of course you should read the original paper [here ](https://arxiv.org/abs/2405.15540).
 
+### Broader Context
+Bundle Neural Networks are part of a larger family of sheaf/copresheaf-based architectures. For a unified theoretical framework that encompasses BuNNs, sheaf neural networks, and other geometric deep learning models based on enriching a GNN with structures originating in algebraic geometry/topology, see [Copresheaf Topological Neural Networks](https://openreview.net/forum?id=3G56xClPYg) (Hajij et al., NeurIPS 2025).
+
 ---
 
 ## 1. Quick Model Intuition
