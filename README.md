@@ -3,23 +3,25 @@
 ## Table of Contents
 - [Quick Model Intuition](#1-quick-model-intuition)
 - [Repository Structure](#2-repository-structure)
-- [Setup, Dataset and Task Description](#3-setup)
+- [Setup, Dataset and Task Description](#3-setup-dataset-and-task-description)
 - [Running Experiments](#4-running-experiments)
 - [Key Results](#5-key-empirical-results-minesweeper)
 - [Where Rotations Matter](#6-where-do-rotations-matter-heterophily-analysis)
 - [Notes & Limitations](#7-notes-limitations-and-how-to-use-this-in-applications)
-- [Implementation notes and debugging](#8-notes-limitations-and-how-to-use-this-in-applications)
+- [Relation to the Identity Sheaf Network critique](#8-relation-to-the-identity-sheaf-network-critique)
+- [Implementation notes and debugging](#9-implementation-notes--debugging)
 
 This repo contains an implementation of **Bundle Neural Networks (BuNN)** (Jacob Bamberger, Federico Barbero, Xiaowen Dong, Michael M. Bronstein ICLR 2025) applied to the Minesweeper heterophilous graph dataset along with several ablations and a study of **when the vector bundle point of view matters**. Feel free to jump to section 6 figures for a quick answer.
 
 **Why this repo?**
-While the original paper proposes a geometric architecture (using vector bundles and connection Laplacians) "on top of" a graph neural network, this project aims to demystify the maths that make this model different from a GCN and its benefits, at least in one of the use-cases the authors suggest: on heterophilious graphs.
+While the original paper proposes a geometric architecture (using vector bundles and connection Laplacians) "on top of" a graph neural network, this project aims to demystify the maths that make this model different from a GCN and its benefits, at least in one of the use-cases the authors suggest: on heterophilous graphs.
 
 Key features:
-- **Strong Reproduction:** 96.11% ± 0.5% AUC (vs paper's 98.99%), with systematic ablations
+- **Partial reproduction:** 96.11% ± 0.50% test ROC AUC (paper: 98.99%), with systematic ablations
 - **Baselines:** GraphSAGE (w/ root skip), GAT, and GCN implementations that establish a strong floor for performance.
-- **Mechanistic Analysis:** We go beyond accuracy numbers to visualize *where* the model succeeds. Our analysis shows that "parallel transport" -- the main geometric tool in BuNNs -- is critical for heterophilous nodes (where neighbors disagree) but redundant for homophilic ones. You will find some visuals making this point in Where Rotations Matter section below.
-- **The maths background** For the mathematical story this architecture is based on, including the smooth and discrete version, see `continuous_maths.md` and `maths_story_discrete.md` respectively. Of course you should read the original paper [here ](https://arxiv.org/abs/2405.15540).
+- **Mechanistic Analysis:** We go beyond accuracy numbers to visualize *where* the model succeeds. Our analysis shows that "parallel transport" -- the main geometric tool in BuNNs -- matters most for heterophilous nodes (where neighbours disagree) and much less for homophilous ones. You will find some visuals making this point in Where Rotations Matter section below.
+- **The maths background** For the mathematical story this architecture is based on, including the smooth and discrete version, see `continuous_maths.md` and `maths_story_discrete.md` respectively. Of course you should read the original paper [here](https://arxiv.org/abs/2405.15540).
+- **Scope of a recent critique:** Section 8 explains why the Identity Sheaf Network result of Hernandez Caralt et al. (2026) and the identity ablation here point in opposite directions, using the heterophily gain of Wang et al. (2024).
 
 ### Broader Context
 Bundle Neural Networks are part of a larger family of sheaf/copresheaf-based architectures. For a unified theoretical framework that encompasses BuNNs, sheaf neural networks, and other geometric deep learning models based on enriching a GNN with structures originating in algebraic geometry/topology, see [Copresheaf Topological Neural Networks](https://openreview.net/forum?id=3G56xClPYg) (Hajij et al., NeurIPS 2025).
@@ -37,9 +39,9 @@ BuNN argues that if neighbors have different "semantics" (heterophily), you shou
 2.  **Parallel Transport:** To move a message from neighbor $v$ to $u$, we apply a learned rotation matrix $R_{u \leftarrow v}$.
 3.  **Diffusion:** We diffuse these rotated features across the graph using a heat kernel ($e^{-t\Delta}$).
 
-**This Repository tests three specific questions:**
+**This repository tests four specific questions:**
 1.  **Do rotations matter?** We compare learned rotations vs. fixed `Identity` rotations.
-2.  **Does "rotating back" matter?** We test a `No-Rotate-Back` variant to see if the local frame consistency is required, or it is it enough to learn a change of basis from a local frame to the global frame for each node.
+2.  **Does "rotating back" matter?** We test a `No-Rotate-Back` variant to see if the local frame consistency is required, or whether it is enough to learn a change of basis from a local frame to the global frame for each node.
 3.  **Is the base network (φ) important?** We swap the backbone between MLP and GraphSAGE.
 4.  **Which nodes / edges are affected?** We look for the nodes and edges where parallel transport makes the biggest difference and characterise them. 
 
@@ -107,13 +109,13 @@ The main files are:
 
   > How often do these nodes become *wrong* if we remove rotate-back or use identity rotations instead?
 
-- **`docs/continuous_maths.md` and `docs/maths_story_discrete.md`**  
+- **`continuous_maths.md` and `maths_story_discrete.md`**  
   Short mathematical notes explaining the smooth and discrete mathematics behind the model and how to translate between them.
 
 You can treat this repository as a self-contained case study in:
 
 - Implementing a nontrivial GNN architecture.
-- Running lablations in a principled way.
+- Running ablations in a principled way.
 - Connecting geometric ideas (bundles, parallel transport) to concrete experiments.
 
 ---
@@ -154,8 +156,8 @@ The Minesweeper dataset is a synthetic graph benchmark inspired by the classic M
 - For 50% of nodes, features are masked/unknown, indicated by a separate binary feature
 - This mimics the incomplete information players face in actual Minesweeper
 
-**Why Heterophilous:**
-The dataset exhibits strong heterophily because mine nodes are typically surrounded by safe nodes, and vice versa - neighboring nodes usually have different labels. This makes it an excellent benchmark for testing GNN performance under heterophily, which is the main challenge BuNNs are designed to address.
+**Why it counts as heterophilous:**
+Mines are placed uniformly at random, so a node's label is independent of its neighbours' labels. The raw edge homophily is 0.68, which is exactly what independent labels give (0.8² + 0.2²); adjusted for class imbalance it is about zero, which is why Platonov et al. include it in their heterophilous suite. In the language of Wang et al. (2024), this is *bad* heterophily: the label distribution of a node's neighbourhood carries essentially no information about its class (see Section 8). The signal is only in the node features (mine counts), and the model has to combine them across neighbours in a way that is not simple averaging.
 
 **Dataset Source:** Introduced in Platonov et al. (2023) "A Critical Look at the Evaluation of GNNs under Heterophily: Are We Really Making Progress?" as part of a benchmark suite of heterophilous graph datasets.
 
@@ -318,7 +320,7 @@ Highlights:
   - This beats the best baseline (`sage_root` at 0.9177) by a clear margin.
 
 - **Largest "paper-like" BuNN (`full_256b`)**:
-  - `full_256b`:  0.9634 ± 0.0031 AUC
+  - `full_256b`:  0.9611 ± 0.0050 AUC
   - This is the best-performing config in the experiments.
 
 - **Large model, bigger than medium, smaller than `full_256b`**:
@@ -342,9 +344,9 @@ Highlights:
   → A topology-aware φ with a root skip is critical.
 
   **Comparison to paper:**
-- Our best: 96.34% ± 0.31%
+- Our best: 96.11% ± 0.50%
 - Paper's BuNN: 98.99% ± 0.16%
-- Gap: 2.65%
+- Gap: 2.88 percentage points
 
 Possible reasons for gap:
 - Different hyperparameter search (our lr=3e-4 vs paper's 3e-5)
@@ -481,16 +483,37 @@ This directly shows that:
 
 - It contains a complete engineering pipeline:
   - Clean configs (baseline vs BuNN).
-  - GPU / Slurm scripts.
+  - GPU training scripts.
   - Logging and log parsing.
   - Careful analysis of *where* the model’s extra capacity is used.
 ---
 
-## 8. Implementation Notes & Debugging
+## 8. Relation to the Identity Sheaf Network critique
+
+Hernandez Caralt, Gonzalez i Catala, Liò and Bazaga, *On the Necessity of Learnable Sheaf Laplacians* ([arXiv:2603.05395](https://arxiv.org/abs/2603.05395), GRaM workshop, ICLR 2026), introduce an Identity Sheaf Network (ISN), a sheaf model with every restriction map fixed to the identity. It matches learned sheaf models on the five benchmarks of Bodnar et al. (2022), which suggests the learned geometry is not doing much there. The paper lists BuNNs as future work.
+
+The `medium_identity` ablation in this repo is the bundle analogue of the ISN: transport maps fixed to the identity. On Minesweeper it costs about 6 AUC points (0.913 → 0.856), and it flips half of the full model's correct predictions on the most heterophilous nodes (Section 6.3). The two results are about different regimes, and the heterophily gain of Wang, Guo, Yang and Wang, *Understanding Heterophily for Graph Neural Networks* ([ICML 2024](https://arxiv.org/abs/2401.09125)), separates them:
+
+| dataset | min gain | max gain | edge homophily | heterophily type |
+|---|---|---|---|---|
+| Texas | 0.224 | 1.392 | 0.061 | good |
+| Wisconsin | 0.434 | 0.984 | 0.178 | good |
+| Cornell | 0.060 | 0.894 | 0.296 | mixed |
+| Chameleon | 0.182 | 1.496 | 0.230 | mixed |
+| Squirrel | 0.276 | 1.283 | 0.222 | good |
+| **Minesweeper** | **0.026** | **0.026** | **0.683** | **bad** |
+
+Gain is the separability gain of Wang et al. (Theorem 2), computed for every pair of classes; *good* means every pair is above the threshold, *bad* means every pair is below it, *mixed* is anything in between. The threshold is 0.2, the value the paper suggests for real-world data; with its theoretical value of about 1, Minesweeper is still the only *bad* dataset. Our values follow the paper's formula, but for Chameleon and Squirrel they differ from the values the paper reports, probably because of preprocessing. Reproduce with `python heterophily_gain.py` (it downloads the same data PyTorch Geometric uses).
+
+On every Bodnar benchmark, at least some pairs of classes have very different neighbourhood mixes (maximum gain 0.9–1.5), so aggregation without learned geometry has something to exploit. On Minesweeper the neighbourhood mix is the same for mines and non-mines (about 20% mines either way), so that shortcut is not available, and fixing the transport to the identity hurts. This is consistent with the ISN result, not a contradiction of it: learned transport looks unnecessary where heterophily gain is high and matters where it is near zero.
+
+Caveats: one dataset, one split, BuNNs rather than sheaf networks, and a smaller ablation model than the best configuration. A proper test would run ISN-style ablations across many datasets spanning the gain spectrum.
+
+## 9. Implementation Notes & Debugging
 
 During implementation, one non-obvious issue emerged:
 
-### 8.1. Over-smoothing in φ Networks  
+### 9.1. Over-smoothing in φ Networks  
 **Problem:** Manual GraphSAGE aggregation performed poorly
 **Root cause:** Missing proper skip/residual connections causing oversmoothing
 **Fix:** Used PyG's SAGEConv with root_weight=True
@@ -498,8 +521,9 @@ During implementation, one non-obvious issue emerged:
 **Lesson:** The φ network's ability to learn the local structure around each node is crucial for performance
 
 
-## 9. Acknowledgements
+## 10. Acknowledgements
 
 - Original Bundle Neural Networks paper: *Bundle Neural Networks for Message Diffusion on Graphs*, ICLR 2025.
 - Minesweeper dataset from `torch_geometric.datasets.HeterophilousGraphDataset`.
 - This implementation and all experiments were done as part of a personal project to understand geometric deep learning and reproduction-style ML engineering.
+- Code and README notes were written with AI assistance (Claude); the experiment design, the analysis and every result were checked by the author.
